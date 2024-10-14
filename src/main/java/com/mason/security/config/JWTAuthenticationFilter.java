@@ -2,6 +2,7 @@ package com.mason.security.config;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,10 +15,10 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-//一樣有兩種方法 一個是介面一個是繼承
+//一樣有兩種方法 一個是介面實作security做好的Filter(OncePerRequestFilter)一個是繼承Filter後自己做
 public class JWTAuthenticationFilter extends OncePerRequestFilter{
 
-
+    @Autowired
     private final JwtSerive JwtSerive;
 
     @Override

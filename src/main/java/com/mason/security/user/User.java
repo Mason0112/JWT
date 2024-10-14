@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
-//可以用介面實作UserDetails或繼承spring裡面的user 二選一
+//可以用介面實作UserDetails或繼承spring裡面的user 二選一 使用介面實作UserDetails比較好跟JPA作整合操作database
 public class User implements UserDetails{
 
     @Id
@@ -54,6 +54,7 @@ public class User implements UserDetails{
         return email;
     }
     
+    //因為屬性中已經有password所以原本沒有這個override 但如果下次有這名字的話一定要override這個方法
     @Override
     public String getPassword() {
         return password;

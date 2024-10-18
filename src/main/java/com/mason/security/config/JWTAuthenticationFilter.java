@@ -2,8 +2,12 @@ package com.mason.security.config;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,8 +22,9 @@ import lombok.RequiredArgsConstructor;
 //一樣有兩種方法 一個是介面實作security做好的Filter(OncePerRequestFilter)一個是繼承Filter後自己做
 public class JWTAuthenticationFilter extends OncePerRequestFilter{
 
-    @Autowired
-    private final JwtSerive JwtSerive;
+    private final JwtService JwtService;
+    //為了讓這service能跟database連動 要自己建立一個class來實踐這個介面
+    private final  UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -31,14 +36,28 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter{
         final String jwt;
         final String userEmail;
 
-        if ( authHeader == null || !authHeader.startsWith("Bearer")){
+        if ( authHeader == null || !authHeader.startsWith("Bearer ")){
             filterChain.doFilter(request,response);
             return;
         }
         jwt = authHeader.substring(7);
-        //  先做好service在進入這一步 TODO extract userEmail from JWT token
-        userEmail = JwtSerive.extractUsername(jwt);
-
+        //  先做好service在進入這一步  extract userEmail from JWT token 解析token拿出username(Email)
+        userEmail = JwtService.extractUsername(jwt);
+        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            if(JwtService.isTokenValid(jwt, userDetails)){
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, 
+                    null,
+                    userDetails.getAuthorities()
+                );
+                authToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+        filterChain.doFilter(request,response);
     }
     
 }

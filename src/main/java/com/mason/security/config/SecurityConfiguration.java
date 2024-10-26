@@ -27,22 +27,20 @@ public class SecurityConfiguration {
             .csrf()
             .disable()
             .authorizeHttpRequests()//開始設置授權請求
-            .requestMatchers("")//指定公開訪問的路徑
+            .requestMatchers("/api/v1/auth/**")//指定公開訪問的路徑
             .permitAll()//任何人都可以訪問
             .anyRequest()//其他所有請求
             .authenticated()//都要進行身分驗證
             .and()
+            //將session清除 我們的所有請求都要透過jwt的認證而不是使用session
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
+            //透過自訂的方法驗證身分
             .authenticationProvider(authenticationProvider)
+            //提早攔截請求做驗證 此過濾器能夠在過濾器鏈的早期攔截請求，讓基於 JWT 的驗證機制取代預設的帳號密碼驗證。
             .addFilterBefore(JwTAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-
-
-            
-
-        
         return http.build();
     }
 

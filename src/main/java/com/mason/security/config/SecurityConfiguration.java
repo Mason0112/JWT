@@ -21,27 +21,28 @@ public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            //將csrf保護機制禁用 因為已經使用JWT驗證了 不需要csrf機制
-            .csrf()
-            .disable()
-            .authorizeHttpRequests()//開始設置授權請求
-            .requestMatchers("/api/v1/auth/**")//指定公開訪問的路徑
-            .permitAll()//任何人都可以訪問
-            .anyRequest()//其他所有請求
-            .authenticated()//都要進行身分驗證
-            .and()
-            //將session清除 我們的所有請求都要透過jwt的認證而不是使用session
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            //透過自訂的方法驗證身分
-            .authenticationProvider(authenticationProvider)
-            //提早攔截請求做驗證 此過濾器能夠在過濾器鏈的早期攔截請求，讓基於 JWT 的驗證機制取代預設的帳號密碼驗證。
-            .addFilterBefore(JwTAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // 將 CSRF 保護機制禁用，因為已經使用 JWT 驗證了，不需要 CSRF 機制
+                .csrf(csrf -> csrf.disable())
+
+                // 配置授權請求
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/auth/**").permitAll() // 指定公開訪問的路徑
+                        .anyRequest().authenticated() // 其他所有請求都需要進行身份驗證
+                )
+
+                // 配置 Session 管理策略
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 禁用 Session，所有請求使用 JWT 驗證
+                )
+
+                // 配置自訂的 AuthenticationProvider
+                .authenticationProvider(authenticationProvider)
+
+                // 添加 JWT 驗證過濾器，在 UsernamePasswordAuthenticationFilter 之前執行
+                .addFilterBefore(JwTAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 }

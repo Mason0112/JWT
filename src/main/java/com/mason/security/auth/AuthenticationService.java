@@ -11,7 +11,6 @@ import com.mason.security.user.User;
 import com.mason.security.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 
 @Service
 @RequiredArgsConstructor

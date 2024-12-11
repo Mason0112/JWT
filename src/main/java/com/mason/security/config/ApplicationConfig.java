@@ -41,6 +41,7 @@ public class ApplicationConfig {
         return authProvider;
     }
 
+    //自定義AuthenticationManager 在此使用的原因:使用資料庫的其他欄位進行驗證 在這是用E-mail
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
         return config.getAuthenticationManager();

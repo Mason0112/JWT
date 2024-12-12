@@ -25,6 +25,7 @@ public class ApplicationConfig {
 
     //不建立新的Class來實作介面
     @Bean
+    //只有一個方法loadUserByUsername 所以用lambda
     public UserDetailsService userDetailsService(){
             //username是我們送過來的參數
             return username -> userRepository.findByEmail(username)
